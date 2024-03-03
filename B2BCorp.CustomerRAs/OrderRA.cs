@@ -27,7 +27,7 @@ namespace B2BCorp.CustomerRAs
                 TotalPrice = productPrice * quantity
             };
 
-            await dbContext.OrderItems.AddAsync(orderItem);
+            dbContext.OrderItems.Add(orderItem);
 
             await dbContext.SaveChangesAsync();
         }
@@ -36,34 +36,27 @@ namespace B2BCorp.CustomerRAs
         {
             var order = await EnsureActiveOrder(customerId);
 
-            var orderItemPrices = await dbContext.OrderItems
+            var orderTotalPrice = await dbContext.OrderItems
                 .Where(x => x.Order.CustomerId == customerId && x.Order.OrderDateTime == null)
-                .Select(x => x.TotalPrice)
-                .ToListAsync();
-            var orderTotalPrice = orderItemPrices.Sum();
+                .SumAsync(x => x.TotalPrice);
 
-            var invoiceAmounts = await dbContext.Invoices
-                .Where(x => x.CustomerId == customerId && !x.IsPaidInFull)
-                .Select(x => x.AmountDue)
-                .ToListAsync();
-            var unpaidInvoicesTotal = invoiceAmounts.Sum();    // SQLite doesn't allow Sum on decimals 
+            var unpaidInvoicesTotal = await dbContext.Invoices
+                .Where(x => x.Order.CustomerId == customerId && !x.IsPaidInFull)
+                .SumAsync(x => x.AmountDue);
 
             order.OrderDateTime = DateTime.UtcNow;
             order.TotalPrice = orderTotalPrice;
             if (unpaidInvoicesTotal > MaxUnpaidInvoiceTotal)
                 order.RequiresReview = true;
 
-            dbContext.Update(order);
-
             var invoice = new B2BDbContext.Invoice
             {
                 AmountDue = order.TotalPrice,
-                Customer = order.Customer,
                 InvoiceDateTime = DateTime.UtcNow,
                 Order = order
             };
 
-            await dbContext.AddAsync(invoice);
+            dbContext.Invoices.Add(invoice);
 
             await dbContext.SaveChangesAsync();
         }
@@ -82,7 +75,7 @@ namespace B2BCorp.CustomerRAs
             {
                 Customer = await GetCustomer(customerId),
             };
-            await dbContext.Orders.AddAsync(order);
+            dbContext.Orders.Add(order);
 
             return order;
         }

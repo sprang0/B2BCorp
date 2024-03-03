@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.Managers.Customer;
+﻿using System;
+using B2BCorp.Contracts.Managers.Customer;
 using B2BCorp.Contracts.Managers.Product;
 
 namespace B2BCorp.Console

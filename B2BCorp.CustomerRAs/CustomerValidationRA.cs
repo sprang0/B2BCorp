@@ -19,13 +19,11 @@ namespace B2BCorp.CustomerRAs
         {
             var productPrice = (await dbContext.Products
                 .SingleAsync(x => x.ProductId == productId)).Price;
-            var productTotalPrice = productPrice * quantity;                
+            var productTotalPrice = productPrice * quantity;
 
-            var orderItemPrices = await dbContext.OrderItems
+            var orderTotalPrice = await dbContext.OrderItems
                 .Where(x => x.Order.CustomerId == customerId && x.Order.OrderDateTime == null)
-                .Select(x => x.TotalPrice)
-                .ToListAsync();
-            var orderTotalPrice = orderItemPrices.Sum();   // SQLite doesn't allow Sum on decimals
+                .SumAsync(x => x.TotalPrice);
 
             var creditLimit = (await dbContext.Customers
                 .SingleAsync(x => x.CustomerId == customerId))
@@ -41,11 +39,10 @@ namespace B2BCorp.CustomerRAs
         private async Task<decimal> GetUnpaidTotal(Guid customerId)
         {
             var invoiceAmounts = await dbContext.Invoices
-                .Where(x => x.CustomerId == customerId && !x.IsPaidInFull)
-                .Select(x => x.AmountDue)
-                .ToListAsync();
+                .Where(x => x.Order.CustomerId == customerId && !x.IsPaidInFull)
+                .SumAsync(x => x.AmountDue);
 
-            return invoiceAmounts.Sum();    // SQLite doesn't allow Sum on decimals 
+            return invoiceAmounts;
         }
 
         #endregion

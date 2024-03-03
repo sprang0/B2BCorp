@@ -15,7 +15,7 @@ namespace B2BCorp.CustomerRAs
                 Name = name
             };
 
-            await dbContext.AddAsync(customer);
+            dbContext.Customers.Add(customer);
 
             await dbContext.SaveChangesAsync();
 
@@ -41,8 +41,6 @@ namespace B2BCorp.CustomerRAs
 
             customer.CreditLimit = creditLimit;
 
-            dbContext.Update(customer);
-
             await dbContext.SaveChangesAsync();
         }
 
@@ -51,8 +49,6 @@ namespace B2BCorp.CustomerRAs
             var customer = await GetCustomerById(customerId);
 
             customer.IsVerified = true;
-
-            dbContext.Update(customer);
 
             await dbContext.SaveChangesAsync();
         }

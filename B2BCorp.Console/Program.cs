@@ -10,7 +10,9 @@ using B2BCorp.DataModels;
 using B2BCorp.ProductManagers;
 using B2BCorp.ProductRAs;
 using B2BCorp.ValidationEngines;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 class Program
 {
@@ -18,8 +20,13 @@ class Program
 
     static void Main()
     {
+        var configBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+        var configuration = configBuilder.Build();
+
         var services = new ServiceCollection();
-        ConfigureServices(services);
+        ConfigureServices(services, configuration);
         serviceProvider = services.BuildServiceProvider();
 
         MainAsync().Wait();
@@ -39,8 +46,9 @@ class Program
         await app.PlaceOrderBeyondCreditLimit();
 }
 
-    private static void ConfigureServices(ServiceCollection services)
+    private static void ConfigureServices(ServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped(_ => configuration);
         // Managers
         services.AddScoped<ICustomerManager, CustomerManager>();
         services.AddScoped<IProductManager, ProductManager>();
@@ -54,7 +62,8 @@ class Program
         services.AddScoped<ICustomerValidationRA, CustomerValidationRA>();
         services.AddScoped<IProductValidationRA, ProductValidationRA>();
         // DB Context
-        services.AddDbContext<B2BDbContext>();
+        services.AddDbContext<B2BDbContext>
+            (opt => opt.UseSqlServer(configuration!.GetConnectionString("DefaultConnection")));
         // App
         services.AddSingleton<TestHarness, TestHarness>();
     }

@@ -19,7 +19,7 @@ namespace B2BCorp.ProductRAs
                 MaxAllowedPerOrder = maxAllowed
             };
 
-            await dbContext.AddAsync(product);
+            dbContext.Products.Add(product);
 
             await dbContext.SaveChangesAsync();
 
@@ -44,8 +44,6 @@ namespace B2BCorp.ProductRAs
 
             product.IsActivated = true;
 
-            dbContext.Update(product);
-
             await dbContext.SaveChangesAsync();
         }
 
@@ -54,8 +52,6 @@ namespace B2BCorp.ProductRAs
             var product = await GetProductById(productId);
 
             product.IsDiscontinued = true;
-
-            dbContext.Update(product);
 
             await dbContext.SaveChangesAsync();
         }
@@ -67,7 +63,8 @@ namespace B2BCorp.ProductRAs
                 .Select(x => new ProductResult
                 {
                     ProductId = x.ProductId,
-                    Name = x.Name
+                    Name = x.Name,
+                    Version = x.Version
                 })
                 .ToListAsync();
         }
