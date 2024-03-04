@@ -1,4 +1,4 @@
-﻿using B2BCorp.Contracts.DTOs.Customer;
+﻿using B2BCorp.Contracts.DTOs.Common;
 using B2BCorp.Contracts.Engines.Validation;
 using B2BCorp.Contracts.ResourceAccessors.Customer;
 using B2BCorp.Contracts.ResourceAccessors.Product;
@@ -10,18 +10,21 @@ namespace B2BCorp.ValidationEngines
         readonly ICustomerValidationRA customerValidationRA = customerValidationRA;
         readonly IProductValidationRA productValidationRA = productValidationRA;
 
-        public async Task<OrderValidationResult> ValidateOrder(Guid customerId, Guid productId, int quantity)
+        public async Task<Result> ValidateOrder(Guid customerId, Guid productId, int quantity)
         {
-            var orderValidation = new OrderValidationResult();
+            var result = await customerValidationRA.IsCustomerVerified(customerId);
+            if (!result.Successful) return result;
 
-            if (!await customerValidationRA.IsCustomerVerified(customerId)) return orderValidation;
-            if (!await productValidationRA.IsQuantityValid(productId, quantity)) return orderValidation;
-            if (!await productValidationRA.IsProductAvailable(productId, quantity)) return orderValidation;
-            if (!await customerValidationRA.IsOrderPriceAllowed(customerId, productId, quantity)) return orderValidation;
+            result = await productValidationRA.IsProductAvailable(productId);
+            if (!result.Successful) return result;
 
-            orderValidation.IsValid = true;
+            result = await productValidationRA.IsQuantityValid(productId, quantity);
+            if (!result.Successful) return result;
 
-            return orderValidation;
+            result = await customerValidationRA.IsOrderPriceAllowed(customerId, productId, quantity);
+            if (!result.Successful) return result;
+
+            return new Result();
         }
     }
 }

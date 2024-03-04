@@ -1,8 +1,10 @@
-﻿namespace B2BCorp.Contracts.Managers.Customer
+﻿using B2BCorp.Contracts.DTOs.Common;
+
+namespace B2BCorp.Contracts.Managers.Customer
 {
     public interface IOrderManager
     {
-        public Task<bool> AddProductToOrder(Guid customerId, Guid productId, int quantity);
-        public Task PlaceOrder(Guid customerId);
+        public Task<Result> AddProductToOrder(Guid customerId, Guid productId, int quantity);
+        public Task<Result> PlaceOrder(Guid customerId);
     }
 }

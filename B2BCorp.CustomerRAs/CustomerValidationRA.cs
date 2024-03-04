@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.ResourceAccessors.Customer;
+﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.ResourceAccessors.Customer;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,14 +9,17 @@ namespace B2BCorp.CustomerRAs
     {
         readonly B2BDbContext dbContext = dbContext;
 
-        public async Task<bool> IsCustomerVerified(Guid customerId)
+        public async Task<Result> IsCustomerVerified(Guid customerId)
         {
-            return (await dbContext.Customers
+            var verified = (await dbContext.Customers
                 .SingleAsync(x => x.CustomerId == customerId))
                 .IsVerified;
+
+            return verified ? new Result() 
+                : new Result(Outcomes.ValidationError, nameof(customerId), customerId, "Customer is not verified.");
         }
 
-        public async Task<bool> IsOrderPriceAllowed(Guid customerId, Guid productId, int quantity)
+        public async Task<Result> IsOrderPriceAllowed(Guid customerId, Guid productId, int quantity)
         {
             var productPrice = (await dbContext.Products
                 .SingleAsync(x => x.ProductId == productId)).Price;
@@ -31,7 +35,11 @@ namespace B2BCorp.CustomerRAs
 
             var unpaidTotal = await GetUnpaidTotal(customerId);
 
-            return orderTotalPrice + productTotalPrice < creditLimit - unpaidTotal;
+            if (orderTotalPrice + productTotalPrice < creditLimit - unpaidTotal)
+                return new Result();
+            else
+                return new Result(Outcomes.ValidationError, nameof(productId), productId,
+                    $"Adding {quantity} products to order (${orderTotalPrice}) exceeds your credit limit (${creditLimit}) and unpaid orders (${unpaidTotal}).");
         }
 
         #region Helpers

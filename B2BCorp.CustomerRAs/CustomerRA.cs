@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.ResourceAccessors.Customer;
+﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.ResourceAccessors.Customer;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ namespace B2BCorp.CustomerRAs
     {
         readonly B2BDbContext dbContext = dbContext;
 
-        public async Task<Guid> AddCustomer(string name)
+        public async Task<Result<Guid>> AddCustomer(string name)
         {
             var customer = new B2BDbContext.Customer
             {
@@ -19,38 +20,43 @@ namespace B2BCorp.CustomerRAs
 
             await dbContext.SaveChangesAsync();
 
-            return customer.CustomerId;
+            return new Result<Guid>(customer.CustomerId);
         }
 
-        public async Task<bool> CustomerExists(string name)
+        public async Task<Result<bool>> CustomerExists(string name)
         {
-            return await dbContext.Customers
-                .AnyAsync(x => x.Name == name);
+            var exists = await dbContext.Customers.AnyAsync(x => x.Name == name);
+
+            return new Result<bool>(exists);
         }
 
-        public async Task<Guid> GetCustomerId(string name)
+        public async Task<Result<Guid>> GetCustomerId(string name)
         {
             var customer = await GetCustomerByName(name);
 
-            return customer.CustomerId;
+            return new Result<Guid>(customer.CustomerId);
         }
 
-        public async Task SetCustomerCreditLimit(Guid customerId, decimal creditLimit)
+        public async Task<Result> SetCustomerCreditLimit(Guid customerId, decimal creditLimit)
         {
             var customer = await GetCustomerById(customerId);
 
             customer.CreditLimit = creditLimit;
 
             await dbContext.SaveChangesAsync();
+
+            return new Result();
         }
 
-        public async Task VerifyCustomer(Guid customerId)
+        public async Task<Result> VerifyCustomer(Guid customerId)
         {
             var customer = await GetCustomerById(customerId);
 
             customer.IsVerified = true;
 
             await dbContext.SaveChangesAsync();
+
+            return new Result();
         }
 
         #region Helpers

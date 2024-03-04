@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.Managers.Customer;
+﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.Managers.Customer;
 using B2BCorp.Contracts.ResourceAccessors.Customer;
 
 namespace B2BCorp.CustomerManagers
@@ -7,29 +8,29 @@ namespace B2BCorp.CustomerManagers
     {
         readonly ICustomerRA customerRA = customerRA;
 
-        public async Task<Guid> AddCustomer(string name)
+        public async Task<Result<Guid>> AddCustomer(string name)
         {
             return await customerRA.AddCustomer(name);
         }
 
-        public async Task<bool> CustomerExists(string name)
+        public async Task<Result<bool>> CustomerExists(string name)
         {
             return await customerRA.CustomerExists(name);
         }
 
-        public async Task<Guid> GetCustomerId(string name)
+        public async Task<Result<Guid>> GetCustomerId(string name)
         {
             return await customerRA.GetCustomerId(name);
         }
 
-        public async Task SetCustomerCreditLimit(Guid customerId, decimal creditLimit)
+        public async Task<Result> SetCustomerCreditLimit(Guid customerId, decimal creditLimit)
         {
-            await customerRA.SetCustomerCreditLimit(customerId, creditLimit);
+            return await customerRA.SetCustomerCreditLimit(customerId, creditLimit);
         }
 
-        public async Task VerifyCustomer(Guid customerId)
+        public async Task<Result> VerifyCustomer(Guid customerId)
         {
-            await customerRA.VerifyCustomer(customerId);
+            return await customerRA.VerifyCustomer(customerId);
         }
     }
 }

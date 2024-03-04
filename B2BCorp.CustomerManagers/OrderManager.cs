@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.Engines.Validation;
+﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.Engines.Validation;
 using B2BCorp.Contracts.Managers.Customer;
 using B2BCorp.Contracts.ResourceAccessors.Customer;
 
@@ -9,20 +10,20 @@ namespace B2BCorp.CustomerManagers
         readonly IOrderValidationEngine orderValidationEngine = orderValidationEngine;
         readonly IOrderRA orderRA = orderRA;
 
-        public async Task<bool> AddProductToOrder(Guid customerId, Guid productId, int quantity)
+        public async Task<Result> AddProductToOrder(Guid customerId, Guid productId, int quantity)
         {
-            var validation = await orderValidationEngine.ValidateOrder(customerId, productId, quantity);
+            var result = await orderValidationEngine.ValidateOrder(customerId, productId, quantity);
 
-            if (!validation.IsValid) return false;
+            if (!result.Successful) return result;
 
-            await orderRA.AddProductToOrder(customerId, productId, quantity);
+            result = await orderRA.AddProductToOrder(customerId, productId, quantity);
 
-            return true;
+            return result;
         }
 
-        public async Task PlaceOrder(Guid customerId)
+        public async Task<Result> PlaceOrder(Guid customerId)
         {
-            await orderRA.PlaceOrder(customerId);
+            return await orderRA.PlaceOrder(customerId);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.DTOs.Product;
+﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.DTOs.Product;
 using B2BCorp.Contracts.ResourceAccessors.Product;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace B2BCorp.ProductRAs
     {
         readonly B2BDbContext dbContext = dbContext;
 
-        public async Task<Guid> AddProduct(string name, decimal price, int minAllowed, int maxAllowed)
+        public async Task<Result<Guid>> AddProduct(string name, decimal price, int minAllowed, int maxAllowed)
         {
             var product = new B2BDbContext.Product
             {
@@ -23,42 +24,46 @@ namespace B2BCorp.ProductRAs
 
             await dbContext.SaveChangesAsync();
 
-            return product.ProductId;
+            return new Result<Guid>(product.ProductId);
         }
 
-        public async Task<bool> ProductExists(string name)
+        public async Task<Result<bool>> ProductExists(string name)
         {
-            return await dbContext.Products.AnyAsync(x => x.Name == name);
+            return new Result<bool>(await dbContext.Products.AnyAsync(x => x.Name == name));
         }
 
-        public async Task<Guid> GetProductId(string name)
+        public async Task<Result<Guid>> GetProductId(string name)
         {
             var product = await GetProductByName(name);
 
-            return product.ProductId;
+            return new Result<Guid>(product.ProductId);
         }
 
-        public async Task ActivateProduct(Guid productId)
+        public async Task<Result> ActivateProduct(Guid productId)
         {
             var product = await GetProductById(productId);
 
             product.IsActivated = true;
 
             await dbContext.SaveChangesAsync();
+
+            return new Result();
         }
 
-        public async Task DiscontinueProduct(Guid productId)
+        public async Task<Result> DiscontinueProduct(Guid productId)
         {
             var product = await GetProductById(productId);
 
             product.IsDiscontinued = true;
 
             await dbContext.SaveChangesAsync();
+
+            return new Result();
         }
 
-        public async Task<List<ProductResult>> ListAvailableProducts()
+        public async Task<Result<List<ProductResult>>> ListAvailableProducts()
         {
-            return await dbContext.Products
+            return new Result<List<ProductResult>>(await dbContext.Products
                 .Where(x => x.IsActivated && !x.IsDiscontinued)
                 .Select(x => new ProductResult
                 {
@@ -66,7 +71,7 @@ namespace B2BCorp.ProductRAs
                     Name = x.Name,
                     Version = x.Version
                 })
-                .ToListAsync();
+                .ToListAsync());
         }
 
         #region Helpers

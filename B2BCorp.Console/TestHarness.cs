@@ -1,4 +1,5 @@
 ﻿using System;
+using B2BCorp.Contracts.DTOs.Common;
 using B2BCorp.Contracts.Managers.Customer;
 using B2BCorp.Contracts.Managers.Product;
 
@@ -37,7 +38,7 @@ namespace B2BCorp.Console
         public async Task CreateData()
         {
             // Block recreating data
-            if (await customerManager.CustomerExists(customers[0].Name!)) return;
+            if ((await customerManager.CustomerExists(customers[0].Name!)).Value) return;
 
             await CreateCustomers();
 
@@ -49,10 +50,10 @@ namespace B2BCorp.Console
         public async Task LoadData()
         {
             foreach (var customer in customers)
-                customer.CustomerId = await customerManager.GetCustomerId(customer.Name!);
+                customer.CustomerId = (await customerManager.GetCustomerId(customer.Name!)).Value;
 
             foreach (var product in products)
-                product.ProductId = await productManager.GetProductId(product.Name!);
+                product.ProductId = (await productManager.GetProductId(product.Name!)).Value;
         }
 
         public async Task PlaceExcessiveOrders()
@@ -112,7 +113,7 @@ namespace B2BCorp.Console
             // Running 1st time will create an order.
             // Running 2nd time will create an order requiring review.
             // Running 3rd time will not be allowed.
-            if (result)
+            if (result.Successful)
             {
                 await orderManager.PlaceOrder(customerId);
                 await System.Console.Out.WriteLineAsync("Order PLACED!");
@@ -139,7 +140,7 @@ namespace B2BCorp.Console
             await OutputResult(result);
 
             // Never allowed
-            if (result)
+            if (result.Successful)
             {
                 await orderManager.PlaceOrder(customerId);
                 throw new Exception();
@@ -153,9 +154,9 @@ namespace B2BCorp.Console
             await System.Console.Out.WriteLineAsync("Creating Customers...");
             foreach (var customer in customers)
             {
-                if (await customerManager.CustomerExists(customer.Name!)) continue;
+                if ((await customerManager.CustomerExists(customer.Name!)).Value) continue;
 
-                customer.CustomerId = await customerManager.AddCustomer(customer.Name!);
+                customer.CustomerId = (await customerManager.AddCustomer(customer.Name!)).Value;
 
                 // Don't verify one customer or set its credit limit
                 if (customer == customers[CustomerIdNotVerified]) continue;
@@ -170,10 +171,10 @@ namespace B2BCorp.Console
             await System.Console.Out.WriteLineAsync("Creating Products...");
             foreach (var product in products)
             {
-                if (await productManager.ProductExists(product.Name!)) continue;
+                if ((await productManager.ProductExists(product.Name!)).Value) continue;
 
-                product.ProductId = await productManager.AddProduct
-                    (product.Name!, product.Price, MinQuantity, MaxQuantity);
+                product.ProductId = (await productManager.AddProduct
+                    (product.Name!, product.Price, MinQuantity, MaxQuantity)).Value;
 
                 // Don't activate one product
                 if (product == products[ProductNotActivated]) continue;
@@ -188,9 +189,13 @@ namespace B2BCorp.Console
             await productManager.DiscontinueProduct(products[ProductDiscontinued].ProductId);
         }
 
-        private static async Task OutputResult(bool result)
+        private static async Task OutputResult(Result result)
         {
-            await System.Console.Out.WriteLineAsync($"Order was {(result ? "allowed" : "NOT allowed")}");
+            if (result.Successful)
+                await System.Console.Out.WriteLineAsync("Order was allowed");
+            else
+                await System.Console.Out.WriteLineAsync($"Order was NOT allowed : " +
+                    $"'{result.PropertyError[result.PropertyError.Keys.First()]} ({result.PropertyError.Keys.First()})'");
         }
 
         #endregion

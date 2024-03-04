@@ -1,4 +1,5 @@
-﻿using B2BCorp.Contracts.ResourceAccessors.Customer;
+﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.ResourceAccessors.Customer;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +11,7 @@ namespace B2BCorp.CustomerRAs
 
         const int MaxUnpaidInvoiceTotal = 50;
 
-        public async Task AddProductToOrder(Guid customerId, Guid productId, int quantity)
+        public async Task<Result> AddProductToOrder(Guid customerId, Guid productId, int quantity)
         {
             var order = await EnsureActiveOrder(customerId);
 
@@ -30,9 +31,11 @@ namespace B2BCorp.CustomerRAs
             dbContext.OrderItems.Add(orderItem);
 
             await dbContext.SaveChangesAsync();
+
+            return new Result();
         }
 
-        public async Task PlaceOrder(Guid customerId)
+        public async Task<Result> PlaceOrder(Guid customerId)
         {
             var order = await EnsureActiveOrder(customerId);
 
@@ -59,6 +62,8 @@ namespace B2BCorp.CustomerRAs
             dbContext.Invoices.Add(invoice);
 
             await dbContext.SaveChangesAsync();
+
+            return new Result();
         }
 
         #region Helpers

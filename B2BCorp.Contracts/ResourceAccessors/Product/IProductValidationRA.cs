@@ -1,8 +1,10 @@
-﻿namespace B2BCorp.Contracts.ResourceAccessors.Product
+﻿using B2BCorp.Contracts.DTOs.Common;
+
+namespace B2BCorp.Contracts.ResourceAccessors.Product
 {
     public interface IProductValidationRA
     {
-        Task<bool> IsQuantityValid(Guid productId, int quantity);
-        Task<bool> IsProductAvailable(Guid productId, int quantity);
+        Task<Result> IsQuantityValid(Guid productId, int quantity);
+        Task<Result> IsProductAvailable(Guid productId);
     }
 }

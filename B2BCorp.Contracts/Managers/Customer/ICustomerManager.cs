@@ -1,11 +1,13 @@
-﻿namespace B2BCorp.Contracts.Managers.Customer
+﻿using B2BCorp.Contracts.DTOs.Common;
+
+namespace B2BCorp.Contracts.Managers.Customer
 {
     public interface ICustomerManager
     {
-        Task<Guid> AddCustomer(string name);
-        Task<Guid> GetCustomerId(string name);
-        Task<bool> CustomerExists(string name); 
-        Task VerifyCustomer(Guid customerId);
-        Task SetCustomerCreditLimit(Guid customerId, decimal creditLimit);
+        Task<Result<Guid>> AddCustomer(string name);
+        Task<Result<Guid>> GetCustomerId(string name);
+        Task<Result<bool>> CustomerExists(string name); 
+        Task<Result> VerifyCustomer(Guid customerId);
+        Task<Result> SetCustomerCreditLimit(Guid customerId, decimal creditLimit);
     }
 }
