@@ -1,12 +1,16 @@
 ﻿using B2BCorp.Contracts.DTOs.Common;
-using B2BCorp.Contracts.DTOs.Product;
 using B2BCorp.Contracts.ResourceAccessors.Product;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace B2BCorp.ProductRAs
 {
-    public class ProductRA(B2BDbContext dbContext) : IProductRA
+    public class ProductEditRA(B2BDbContext dbContext) : IProductEditRA
     {
         readonly B2BDbContext dbContext = dbContext;
 
@@ -23,18 +27,6 @@ namespace B2BCorp.ProductRAs
             dbContext.Products.Add(product);
 
             await dbContext.SaveChangesAsync();
-
-            return new Result<Guid>(product.ProductId);
-        }
-
-        public async Task<Result<bool>> ProductExists(string name)
-        {
-            return new Result<bool>(await dbContext.Products.AnyAsync(x => x.Name == name));
-        }
-
-        public async Task<Result<Guid>> GetProductId(string name)
-        {
-            var product = await GetProductByName(name);
 
             return new Result<Guid>(product.ProductId);
         }
@@ -61,31 +53,13 @@ namespace B2BCorp.ProductRAs
             return new Result();
         }
 
-        public async Task<Result<List<ProductResult>>> ListAvailableProducts()
-        {
-            return new Result<List<ProductResult>>(await dbContext.Products
-                .Where(x => x.IsActivated && !x.IsDiscontinued)
-                .Select(x => new ProductResult
-                {
-                    ProductId = x.ProductId,
-                    Name = x.Name,
-                    Version = x.Version
-                })
-                .ToListAsync());
-        }
-
         #region Helpers
 
         private async Task<B2BDbContext.Product> GetProductById(Guid productId)
         {
             return await dbContext.Products.SingleAsync(x => x.ProductId == productId);
         }
-
-        private async Task<B2BDbContext.Product> GetProductByName(string name)
-        {
-            return await dbContext.Products.SingleAsync(x => x.Name == name);
-        }
-
+        
         #endregion
     }
 }

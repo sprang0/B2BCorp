@@ -5,10 +5,14 @@ using B2BCorp.Contracts.Managers.Product;
 
 namespace B2BCorp.Console
 {
-    public class TestHarness(ICustomerManager customerManager, IProductManager productManager, IOrderManager orderManager)
+    public class TestHarness(ICustomerManager customerManager, 
+        IProductSearchManager productSearchManager, 
+        IProductEditManager productEditManager, 
+        IOrderManager orderManager)
     {
         readonly ICustomerManager customerManager = customerManager;
-        readonly IProductManager productManager = productManager;
+        readonly IProductSearchManager productSearchManager = productSearchManager;
+        readonly IProductEditManager productEditManager = productEditManager;
         readonly IOrderManager orderManager = orderManager;
 
         const int CustomerIdNotVerified = 1;
@@ -53,7 +57,7 @@ namespace B2BCorp.Console
                 customer.CustomerId = (await customerManager.GetCustomerId(customer.Name!)).Value;
 
             foreach (var product in products)
-                product.ProductId = (await productManager.GetProductId(product.Name!)).Value;
+                product.ProductId = (await productSearchManager.GetProductId(product.Name!)).Value;
         }
 
         public async Task PlaceExcessiveOrders()
@@ -171,22 +175,22 @@ namespace B2BCorp.Console
             await System.Console.Out.WriteLineAsync("Creating Products...");
             foreach (var product in products)
             {
-                if ((await productManager.ProductExists(product.Name!)).Value) continue;
+                if ((await productSearchManager.ProductExists(product.Name!)).Value) continue;
 
-                product.ProductId = (await productManager.AddProduct
+                product.ProductId = (await productEditManager.AddProduct
                     (product.Name!, product.Price, MinQuantity, MaxQuantity)).Value;
 
                 // Don't activate one product
                 if (product == products[ProductNotActivated]) continue;
 
-                await productManager.ActivateProduct(product.ProductId);
+                await productEditManager.ActivateProduct(product.ProductId);
             }
         }
 
         private async Task DiscontinueProduct()
         {
             await System.Console.Out.WriteLineAsync("Discontinuing a Product...");
-            await productManager.DiscontinueProduct(products[ProductDiscontinued].ProductId);
+            await productEditManager.DiscontinueProduct(products[ProductDiscontinued].ProductId);
         }
 
         private static async Task OutputResult(Result result)
