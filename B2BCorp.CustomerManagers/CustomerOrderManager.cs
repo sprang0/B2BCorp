@@ -5,10 +5,10 @@ using B2BCorp.Contracts.ResourceAccessors.Customer;
 
 namespace B2BCorp.CustomerManagers
 {
-    public class OrderManager(IOrderValidationEngine orderValidationEngine, IOrderRA orderRA) : IOrderManager
+    public class CustomerOrderManager(IOrderValidationEngine orderValidationEngine, ICustomerOrderRA orderRA) : ICustomerOrderManager
     {
         readonly IOrderValidationEngine orderValidationEngine = orderValidationEngine;
-        readonly IOrderRA orderRA = orderRA;
+        readonly ICustomerOrderRA orderRA = orderRA;
 
         public async Task<Result> AddProductToOrder(Guid customerId, Guid productId, int quantity)
         {

@@ -5,15 +5,17 @@ using B2BCorp.Contracts.Managers.Product;
 
 namespace B2BCorp.Console
 {
-    public class TestHarness(ICustomerManager customerManager, 
+    public class TestHarness(ICustomerSearchManager customerSearchManager, 
+        ICustomerEditManager customerEditManager,
         IProductSearchManager productSearchManager, 
         IProductEditManager productEditManager, 
-        IOrderManager orderManager)
+        ICustomerOrderManager customerOrderManager)
     {
-        readonly ICustomerManager customerManager = customerManager;
+        readonly ICustomerSearchManager customerSearchManager = customerSearchManager;
+        readonly ICustomerEditManager customerEditManager = customerEditManager;
         readonly IProductSearchManager productSearchManager = productSearchManager;
         readonly IProductEditManager productEditManager = productEditManager;
-        readonly IOrderManager orderManager = orderManager;
+        readonly ICustomerOrderManager customerOrderManager = customerOrderManager;
 
         const int CustomerIdNotVerified = 1;
         const int ProductDiscontinued = 2;
@@ -42,7 +44,7 @@ namespace B2BCorp.Console
         public async Task CreateData()
         {
             // Block recreating data
-            if ((await customerManager.CustomerExists(customers[0].Name!)).Value) return;
+            if ((await customerSearchManager.CustomerExists(customers[0].Name!)).Value) return;
 
             await CreateCustomers();
 
@@ -54,7 +56,7 @@ namespace B2BCorp.Console
         public async Task LoadData()
         {
             foreach (var customer in customers)
-                customer.CustomerId = (await customerManager.GetCustomerId(customer.Name!)).Value;
+                customer.CustomerId = (await customerSearchManager.GetCustomerId(customer.Name!)).Value;
 
             foreach (var product in products)
                 product.ProductId = (await productSearchManager.GetProductId(product.Name!)).Value;
@@ -65,17 +67,17 @@ namespace B2BCorp.Console
             await System.Console.Out.WriteLineAsync("Trying to buy too much/little...");
 
             // Try to buy more than allowed
-            var result = await orderManager.AddProductToOrder
+            var result = await customerOrderManager.AddProductToOrder
                 (customers[0].CustomerId, products[4].ProductId, MaxQuantity + 1);
             await OutputResult(result);
 
             // Try to buy less than allowed
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customers[2].CustomerId, products[0].ProductId, MinQuantity - 1);
             await OutputResult(result);
 
             // Try to order more than credit limit allows
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customers[4].CustomerId, products[1].ProductId, 50);
             await OutputResult(result);
         }
@@ -85,17 +87,17 @@ namespace B2BCorp.Console
             await System.Console.Out.WriteLineAsync("Trying to buy with unverified customers or invalid products...");
 
             // Unverified customer
-            var result = await orderManager.AddProductToOrder
+            var result = await customerOrderManager.AddProductToOrder
                 (customers[CustomerIdNotVerified].CustomerId, products[0].ProductId, 20);
             await OutputResult(result);
 
             // Unactivated product
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customers[0].CustomerId, products[ProductNotActivated].ProductId, 20);
             await OutputResult(result);
 
             // Discontinued product
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customers[4].CustomerId, products[ProductDiscontinued].ProductId, 20);
             await OutputResult(result);
         }
@@ -106,11 +108,11 @@ namespace B2BCorp.Console
 
             var customerId = customers[0].CustomerId;
 
-            var result = await orderManager.AddProductToOrder
+            var result = await customerOrderManager.AddProductToOrder
                 (customerId, products[0].ProductId, 15);
             await OutputResult(result);
 
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customerId, products[1].ProductId, 15);
             await OutputResult(result);
 
@@ -119,7 +121,7 @@ namespace B2BCorp.Console
             // Running 3rd time will not be allowed.
             if (result.Successful)
             {
-                await orderManager.PlaceOrder(customerId);
+                await customerOrderManager.PlaceOrder(customerId);
                 await System.Console.Out.WriteLineAsync("Order PLACED!");
             }
         }
@@ -131,22 +133,22 @@ namespace B2BCorp.Console
             var customerId = customers[2].CustomerId;
 
             // Running a 2nd time will exceed credit limit here
-            var result = await orderManager.AddProductToOrder
+            var result = await customerOrderManager.AddProductToOrder
                 (customerId, products[0].ProductId, 35);
             await OutputResult(result);
 
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customerId, products[1].ProductId, 35);
             await OutputResult(result);
 
-            result = await orderManager.AddProductToOrder
+            result = await customerOrderManager.AddProductToOrder
                 (customerId, products[4].ProductId, 35);
             await OutputResult(result);
 
             // Never allowed
             if (result.Successful)
             {
-                await orderManager.PlaceOrder(customerId);
+                await customerOrderManager.PlaceOrder(customerId);
                 throw new Exception();
             }
         }
@@ -158,15 +160,15 @@ namespace B2BCorp.Console
             await System.Console.Out.WriteLineAsync("Creating Customers...");
             foreach (var customer in customers)
             {
-                if ((await customerManager.CustomerExists(customer.Name!)).Value) continue;
+                if ((await customerSearchManager.CustomerExists(customer.Name!)).Value) continue;
 
-                customer.CustomerId = (await customerManager.AddCustomer(customer.Name!)).Value;
+                customer.CustomerId = (await customerEditManager.AddCustomer(customer.Name!)).Value;
 
                 // Don't verify one customer or set its credit limit
                 if (customer == customers[CustomerIdNotVerified]) continue;
 
-                await customerManager.VerifyCustomer(customer.CustomerId);
-                await customerManager.SetCustomerCreditLimit(customer.CustomerId, CreditLimit);
+                await customerEditManager.VerifyCustomer(customer.CustomerId);
+                await customerEditManager.SetCustomerCreditLimit(customer.CustomerId, CreditLimit);
             }
         }
 

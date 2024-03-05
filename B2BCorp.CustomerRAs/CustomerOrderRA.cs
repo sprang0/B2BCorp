@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace B2BCorp.CustomerRAs
 {
-    public class OrderRA(B2BDbContext dbContext) : IOrderRA
+    public class CustomerOrderRA(B2BDbContext dbContext) : ICustomerOrderRA
     {
         readonly B2BDbContext dbContext = dbContext;
 

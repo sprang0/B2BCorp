@@ -50,15 +50,19 @@ class Program
     {
         services.AddScoped(_ => configuration);
         // Managers
-        services.AddScoped<ICustomerManager, CustomerManager>();
+        services.AddScoped<ICustomerSearchManager, CustomerSearchManager>();
+        services.AddScoped<ICustomerEditManager, CustomerEditManager>();
         services.AddScoped<IProductSearchManager, ProductSearchManager>();
-        services.AddScoped<IOrderManager, OrderManager>();
+        services.AddScoped<IProductEditManager, ProductEditManager>();
+        services.AddScoped<ICustomerOrderManager, CustomerOrderManager>();
         // Engines
         services.AddScoped<IOrderValidationEngine, OrderValidationEngine>();
         // RAs
-        services.AddScoped<ICustomerRA, CustomerRA>();
-        services.AddScoped<IOrderRA, OrderRA>();
+        services.AddScoped<ICustomerSearchRA, CustomerSearchRA>();
+        services.AddScoped<ICustomerEditRA, CustomerEditRA>();
+        services.AddScoped<ICustomerOrderRA, CustomerOrderRA>();
         services.AddScoped<IProductSearchRA, ProductSearchRA>();
+        services.AddScoped<IProductEditRA, ProductEditRA>();
         services.AddScoped<ICustomerValidationRA, CustomerValidationRA>();
         services.AddScoped<IProductValidationRA, ProductValidationRA>();
         // DB Context

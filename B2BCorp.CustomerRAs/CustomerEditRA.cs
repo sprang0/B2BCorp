@@ -2,10 +2,15 @@
 using B2BCorp.Contracts.ResourceAccessors.Customer;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace B2BCorp.CustomerRAs
 {
-    public class CustomerRA(B2BDbContext dbContext) : ICustomerRA
+    public class CustomerEditRA(B2BDbContext dbContext) : ICustomerEditRA
     {
         readonly B2BDbContext dbContext = dbContext;
 
@@ -19,20 +24,6 @@ namespace B2BCorp.CustomerRAs
             dbContext.Customers.Add(customer);
 
             await dbContext.SaveChangesAsync();
-
-            return new Result<Guid>(customer.CustomerId);
-        }
-
-        public async Task<Result<bool>> CustomerExists(string name)
-        {
-            var exists = await dbContext.Customers.AnyAsync(x => x.Name == name);
-
-            return new Result<bool>(exists);
-        }
-
-        public async Task<Result<Guid>> GetCustomerId(string name)
-        {
-            var customer = await GetCustomerByName(name);
 
             return new Result<Guid>(customer.CustomerId);
         }
@@ -65,12 +56,6 @@ namespace B2BCorp.CustomerRAs
         {
             return await dbContext.Customers
                 .SingleAsync(x => x.CustomerId == customerId);
-        }
-
-        private async Task<B2BDbContext.Customer> GetCustomerByName(string name)
-        {
-            return await dbContext.Customers
-                .SingleAsync(x => x.Name == name);
         }
 
         #endregion
