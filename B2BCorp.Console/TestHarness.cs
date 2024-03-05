@@ -17,9 +17,17 @@ namespace B2BCorp.Console
         readonly IProductEditManager productEditManager = productEditManager;
         readonly ICustomerOrderManager customerOrderManager = customerOrderManager;
 
-        const int CustomerIdNotVerified = 1;
-        const int ProductDiscontinued = 2;
-        const int ProductNotActivated = 3;
+        const int AlphaCorpId = 0;
+        const int BetaCompanyNotVerifiedId = 1;
+        const int CorporateCorporationId = 2;
+        const int DeltaBusinessId = 3;
+        const int EagleIndustriesId = 4;
+
+        const int TwinkiesId = 0;
+        const int HoHosId = 1;
+        const int LilDebbiesDiscontinuedId = 2;
+        const int SnakKakesNotActivatedId = 3;
+        const int TastyCakesId = 4;
         const int CreditLimit = 150;
         const int MinQuantity = 12;
         const int MaxQuantity = 144;
@@ -37,14 +45,14 @@ namespace B2BCorp.Console
             new() { Name = "Twinkies", Price = 1.59M },
             new() { Name = "Ho-Hos", Price = 2.19M },
             new() { Name = "Li'l Debbies", Price = 2.29M },
-            new() { Name = "Snack Kakes", Price = .79M },
+            new() { Name = "Snak Kakes", Price = .79M },
             new() { Name = "TastyCakes", Price = 1.99M }
         ];
 
         public async Task CreateData()
         {
             // Block recreating data
-            if ((await customerSearchManager.CustomerExists(customers[0].Name!)).Value) return;
+            if ((await customerSearchManager.CustomerExists(customers[AlphaCorpId].Name!)).Value) return;
 
             await CreateCustomers();
 
@@ -68,17 +76,17 @@ namespace B2BCorp.Console
 
             // Try to buy more than allowed
             var result = await customerOrderManager.AddProductToOrder
-                (customers[0].CustomerId, products[4].ProductId, MaxQuantity + 1);
+                (customers[AlphaCorpId].CustomerId, products[TastyCakesId].ProductId, MaxQuantity + 1);
             await OutputResult(result);
 
             // Try to buy less than allowed
             result = await customerOrderManager.AddProductToOrder
-                (customers[2].CustomerId, products[0].ProductId, MinQuantity - 1);
+                (customers[CorporateCorporationId].CustomerId, products[TwinkiesId].ProductId, MinQuantity - 1);
             await OutputResult(result);
 
             // Try to order more than credit limit allows
             result = await customerOrderManager.AddProductToOrder
-                (customers[4].CustomerId, products[1].ProductId, 50);
+                (customers[EagleIndustriesId].CustomerId, products[HoHosId].ProductId, 50);
             await OutputResult(result);
         }
 
@@ -88,17 +96,17 @@ namespace B2BCorp.Console
 
             // Unverified customer
             var result = await customerOrderManager.AddProductToOrder
-                (customers[CustomerIdNotVerified].CustomerId, products[0].ProductId, 20);
+                (customers[BetaCompanyNotVerifiedId].CustomerId, products[TwinkiesId].ProductId, 20);
             await OutputResult(result);
 
             // Unactivated product
             result = await customerOrderManager.AddProductToOrder
-                (customers[0].CustomerId, products[ProductNotActivated].ProductId, 20);
+                (customers[AlphaCorpId].CustomerId, products[SnakKakesNotActivatedId].ProductId, 20);
             await OutputResult(result);
 
             // Discontinued product
             result = await customerOrderManager.AddProductToOrder
-                (customers[4].CustomerId, products[ProductDiscontinued].ProductId, 20);
+                (customers[EagleIndustriesId].CustomerId, products[LilDebbiesDiscontinuedId].ProductId, 20);
             await OutputResult(result);
         }
 
@@ -106,14 +114,14 @@ namespace B2BCorp.Console
         {
             await System.Console.Out.WriteLineAsync("Making some (hopefully) valid purchases...");
 
-            var customerId = customers[0].CustomerId;
+            var customerId = customers[AlphaCorpId].CustomerId;
 
             var result = await customerOrderManager.AddProductToOrder
-                (customerId, products[0].ProductId, 15);
+                (customerId, products[TwinkiesId].ProductId, 15);
             await OutputResult(result);
 
             result = await customerOrderManager.AddProductToOrder
-                (customerId, products[1].ProductId, 15);
+                (customerId, products[HoHosId].ProductId, 15);
             await OutputResult(result);
 
             // Running 1st time will create an order.
@@ -130,19 +138,19 @@ namespace B2BCorp.Console
         {
             await System.Console.Out.WriteLineAsync("Making purchases beyond credit limit...");
 
-            var customerId = customers[2].CustomerId;
+            var customerId = customers[CorporateCorporationId].CustomerId;
 
             // Running a 2nd time will exceed credit limit here
             var result = await customerOrderManager.AddProductToOrder
-                (customerId, products[0].ProductId, 35);
+                (customerId, products[TwinkiesId].ProductId, 35);
             await OutputResult(result);
 
             result = await customerOrderManager.AddProductToOrder
-                (customerId, products[1].ProductId, 35);
+                (customerId, products[HoHosId].ProductId, 35);
             await OutputResult(result);
 
             result = await customerOrderManager.AddProductToOrder
-                (customerId, products[4].ProductId, 35);
+                (customerId, products[TastyCakesId].ProductId, 35);
             await OutputResult(result);
 
             // Never allowed
@@ -165,7 +173,7 @@ namespace B2BCorp.Console
                 customer.CustomerId = (await customerEditManager.AddCustomer(customer.Name!)).Value;
 
                 // Don't verify one customer or set its credit limit
-                if (customer == customers[CustomerIdNotVerified]) continue;
+                if (customer == customers[BetaCompanyNotVerifiedId]) continue;
 
                 await customerEditManager.VerifyCustomer(customer.CustomerId);
                 await customerEditManager.SetCustomerCreditLimit(customer.CustomerId, CreditLimit);
@@ -183,7 +191,7 @@ namespace B2BCorp.Console
                     (product.Name!, product.Price, MinQuantity, MaxQuantity)).Value;
 
                 // Don't activate one product
-                if (product == products[ProductNotActivated]) continue;
+                if (product == products[SnakKakesNotActivatedId]) continue;
 
                 await productEditManager.ActivateProduct(product.ProductId);
             }
@@ -192,7 +200,7 @@ namespace B2BCorp.Console
         private async Task DiscontinueProduct()
         {
             await System.Console.Out.WriteLineAsync("Discontinuing a Product...");
-            await productEditManager.DiscontinueProduct(products[ProductDiscontinued].ProductId);
+            await productEditManager.DiscontinueProduct(products[LilDebbiesDiscontinuedId].ProductId);
         }
 
         private static async Task OutputResult(Result result)
