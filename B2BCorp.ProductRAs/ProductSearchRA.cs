@@ -22,17 +22,38 @@ namespace B2BCorp.ProductRAs
             return new Result<Guid>(product.ProductId);
         }
 
-        public async Task<Result<List<ProductResult>>> ListAvailableProducts()
+        public async Task<Result<List<AvailableProduct>>> ListAvailableProducts()
         {
-            return new Result<List<ProductResult>>(await dbContext.Products
+            var records = await dbContext.Products
                 .Where(x => x.IsActivated && !x.IsDiscontinued)
-                .Select(x => new ProductResult
+                .Select(x => new AvailableProduct
                 {
                     ProductId = x.ProductId,
                     Name = x.Name,
+                    Price = x.Price
+                })
+                .ToListAsync();
+
+            return new Result<List<AvailableProduct>>(records);
+        }
+
+        public async Task<Result<List<ProductDetail>>> ListAllProducts()
+        {
+            var records = await dbContext.Products
+                .Select(x => new ProductDetail
+                {
+                    ProductId = x.ProductId,
+                    Name = x.Name,
+                    Price = x.Price,
+                    IsActivated = x.IsActivated,
+                    IsDiscontinued = x.IsDiscontinued,
+                    MaxAllowedPerOrder = x.MaxAllowedPerOrder,
+                    MinAllowedPerOrder = x.MinAllowedPerOrder,
                     Version = x.Version
                 })
-                .ToListAsync());
+                .ToListAsync();
+
+            return new Result<List<ProductDetail>>(records);
         }
 
         #region Helpers

@@ -1,11 +1,6 @@
 ﻿using B2BCorp.Contracts.DTOs.Common;
 using B2BCorp.Contracts.Managers.Customer;
 using B2BCorp.Contracts.ResourceAccessors.Customer;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace B2BCorp.CustomerManagers
 {

@@ -4,6 +4,6 @@ namespace B2BCorp.Contracts.Engines.Validation
 {
     public interface IOrderValidationEngine
     {
-        public Task<Result> ValidateOrder(Guid customerId, Guid productId, int quantity);
+        Task<Result> ValidateOrder(Guid customerId, Guid productId, int quantity);
     }
 }

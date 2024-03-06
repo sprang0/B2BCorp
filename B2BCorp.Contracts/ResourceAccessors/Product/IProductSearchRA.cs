@@ -6,6 +6,7 @@ namespace B2BCorp.Contracts.ResourceAccessors.Product
     {
         public Task<Result<bool>> ProductExists(string name);
         public Task<Result<Guid>> GetProductId(string name);
-        public Task<Result<List<DTOs.Product.ProductResult>>> ListAvailableProducts();
+        public Task<Result<List<DTOs.Product.AvailableProduct>>> ListAvailableProducts();
+        public Task<Result<List<DTOs.Product.ProductDetail>>> ListAllProducts();
     }
 }

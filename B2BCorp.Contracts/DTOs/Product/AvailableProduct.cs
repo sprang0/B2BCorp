@@ -1,9 +1,9 @@
 ﻿namespace B2BCorp.Contracts.DTOs.Product
 {
-    public class ProductResult
+    public class AvailableProduct
     {
         public Guid ProductId { get; set; }
         public string Name { get; set; } = "";
-        public byte[] Version { get; set; } = [];
+        public decimal Price { get; set; }
     }
 }

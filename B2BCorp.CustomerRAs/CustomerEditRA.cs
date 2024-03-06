@@ -2,11 +2,6 @@
 using B2BCorp.Contracts.ResourceAccessors.Customer;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace B2BCorp.CustomerRAs
 {

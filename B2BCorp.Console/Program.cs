@@ -44,27 +44,28 @@ class Program
         await app.PlaceInvalidOrders();
         await app.PlaceGoodOrder();
         await app.PlaceOrderBeyondCreditLimit();
+        await app.UpdateProductsConcurrently();
 }
 
     private static void ConfigureServices(ServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped(_ => configuration);
+        services.AddSingleton(_ => configuration);
         // Managers
-        services.AddScoped<ICustomerSearchManager, CustomerSearchManager>();
-        services.AddScoped<ICustomerEditManager, CustomerEditManager>();
-        services.AddScoped<IProductSearchManager, ProductSearchManager>();
-        services.AddScoped<IProductEditManager, ProductEditManager>();
-        services.AddScoped<ICustomerOrderManager, CustomerOrderManager>();
+        services.AddTransient<ICustomerSearchManager, CustomerSearchManager>();
+        services.AddTransient<ICustomerEditManager, CustomerEditManager>();
+        services.AddTransient<IProductSearchManager, ProductSearchManager>();
+        services.AddTransient<IProductEditManager, ProductEditManager>();
+        services.AddTransient<ICustomerOrderManager, CustomerOrderManager>();
         // Engines
-        services.AddScoped<IOrderValidationEngine, OrderValidationEngine>();
+        services.AddTransient<IOrderValidationEngine, OrderValidationEngine>();
         // RAs
-        services.AddScoped<ICustomerSearchRA, CustomerSearchRA>();
-        services.AddScoped<ICustomerEditRA, CustomerEditRA>();
-        services.AddScoped<ICustomerOrderRA, CustomerOrderRA>();
-        services.AddScoped<IProductSearchRA, ProductSearchRA>();
-        services.AddScoped<IProductEditRA, ProductEditRA>();
-        services.AddScoped<ICustomerValidationRA, CustomerValidationRA>();
-        services.AddScoped<IProductValidationRA, ProductValidationRA>();
+        services.AddTransient<ICustomerSearchRA, CustomerSearchRA>();
+        services.AddTransient<ICustomerEditRA, CustomerEditRA>();
+        services.AddTransient<ICustomerOrderRA, CustomerOrderRA>();
+        services.AddTransient<IProductSearchRA, ProductSearchRA>();
+        services.AddTransient<IProductEditRA, ProductEditRA>();
+        services.AddTransient<ICustomerValidationRA, CustomerValidationRA>();
+        services.AddTransient<IProductValidationRA, ProductValidationRA>();
         // DB Context
         services.AddDbContext<B2BDbContext>
             (opt => opt.UseSqlServer(configuration!.GetConnectionString("DefaultConnection")));

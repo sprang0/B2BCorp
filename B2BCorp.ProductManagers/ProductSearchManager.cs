@@ -19,9 +19,14 @@ namespace B2BCorp.ProductManagers
             return await productSearchRA.GetProductId(name);
         }
 
-        public async Task<Result<List<ProductResult>>> ListAvailableProducts()
+        public async Task<Result<List<AvailableProduct>>> ListAvailableProducts()
         {
             return await productSearchRA.ListAvailableProducts();
+        }
+
+        public async Task<Result<List<ProductDetail>>> ListAllProducts()
+        {
+            return await productSearchRA.ListAllProducts();
         }
     }
 }

@@ -1,12 +1,9 @@
 ﻿using B2BCorp.Contracts.DTOs.Common;
+using B2BCorp.Contracts.DTOs.Product;
 using B2BCorp.Contracts.ResourceAccessors.Product;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace B2BCorp.ProductRAs
 {
@@ -29,6 +26,35 @@ namespace B2BCorp.ProductRAs
             await dbContext.SaveChangesAsync();
 
             return new Result<Guid>(product.ProductId);
+        }
+
+        public async Task<Result> UpdateProduct(ProductDetail productDetail)
+        {
+            var record = await dbContext.Products
+                .SingleAsync(x => x.ProductId == productDetail.ProductId);
+
+            Console.WriteLine($"DB: {BitConverter.ToInt64(record.Version)}  Update: {BitConverter.ToInt64(productDetail.Version)}");
+
+            record.Name = productDetail.Name;
+            record.Price = productDetail.Price;
+            record.MinAllowedPerOrder = productDetail.MinAllowedPerOrder;
+            record.MaxAllowedPerOrder = productDetail.MaxAllowedPerOrder;
+            record.IsActivated = productDetail.IsActivated;
+            record.IsDiscontinued = productDetail.IsDiscontinued;
+            // Assert concurrency check
+            dbContext.Entry(record).Property("Version").OriginalValue = productDetail.Version;
+
+            try
+            {
+                await dbContext.SaveChangesAsync();
+
+                return new Result();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return new Result(Outcomes.ConcurrencyError, nameof(productDetail.ProductId), productDetail.ProductId,
+                    "This product was edited while you were working with it.");
+            }
         }
 
         public async Task<Result> ActivateProduct(Guid productId)
@@ -59,7 +85,7 @@ namespace B2BCorp.ProductRAs
         {
             return await dbContext.Products.SingleAsync(x => x.ProductId == productId);
         }
-        
+
         #endregion
     }
 }

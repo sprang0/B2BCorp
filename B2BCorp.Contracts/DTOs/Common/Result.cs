@@ -14,6 +14,7 @@
         }
 
         public bool Successful => Outcome == Outcomes.Success;
+        public bool ConcurrencyError => Outcome == Outcomes.ConcurrencyError;
 
         public Outcomes Outcome { get; set; } = Outcomes.Success;
         public Dictionary<string, string> PropertyError { get; set; } = [];

@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using System.ComponentModel.DataAnnotations;
-using System.Data.SqlTypes;
 
 namespace B2BCorp.DataModels
 {

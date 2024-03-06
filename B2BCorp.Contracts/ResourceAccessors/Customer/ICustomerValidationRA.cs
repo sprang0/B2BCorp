@@ -4,7 +4,7 @@ namespace B2BCorp.Contracts.ResourceAccessors.Customer
 {
     public interface ICustomerValidationRA
     {
-        public Task<Result> IsCustomerVerified(Guid customerId);
-        public Task<Result> IsOrderPriceAllowed(Guid customerId, Guid productId, int quantity);
+       Task<Result> IsCustomerVerified(Guid customerId);
+       Task<Result> IsOrderPriceAllowed(Guid customerId, Guid productId, int quantity);
     }
 }

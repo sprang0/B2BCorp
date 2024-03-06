@@ -1,14 +1,13 @@
-﻿using System;
-using B2BCorp.Contracts.DTOs.Common;
+﻿using B2BCorp.Contracts.DTOs.Common;
 using B2BCorp.Contracts.Managers.Customer;
 using B2BCorp.Contracts.Managers.Product;
 
 namespace B2BCorp.Console
 {
-    public class TestHarness(ICustomerSearchManager customerSearchManager, 
+    public class TestHarness(ICustomerSearchManager customerSearchManager,
         ICustomerEditManager customerEditManager,
-        IProductSearchManager productSearchManager, 
-        IProductEditManager productEditManager, 
+        IProductSearchManager productSearchManager,
+        IProductEditManager productEditManager,
         ICustomerOrderManager customerOrderManager)
     {
         readonly ICustomerSearchManager customerSearchManager = customerSearchManager;
@@ -72,57 +71,57 @@ namespace B2BCorp.Console
 
         public async Task PlaceExcessiveOrders()
         {
-            await System.Console.Out.WriteLineAsync("Trying to buy too much/little...");
+            await Output("Trying to buy too much/little...");
 
             // Try to buy more than allowed
             var result = await customerOrderManager.AddProductToOrder
                 (customers[AlphaCorpId].CustomerId, products[TastyCakesId].ProductId, MaxQuantity + 1);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             // Try to buy less than allowed
             result = await customerOrderManager.AddProductToOrder
                 (customers[CorporateCorporationId].CustomerId, products[TwinkiesId].ProductId, MinQuantity - 1);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             // Try to order more than credit limit allows
             result = await customerOrderManager.AddProductToOrder
                 (customers[EagleIndustriesId].CustomerId, products[HoHosId].ProductId, 50);
-            await OutputResult(result);
+            await OutputOrderResult(result);
         }
 
         public async Task PlaceInvalidOrders()
         {
-            await System.Console.Out.WriteLineAsync("Trying to buy with unverified customers or invalid products...");
+            await Output("Trying to buy with unverified customers or invalid products...");
 
             // Unverified customer
             var result = await customerOrderManager.AddProductToOrder
                 (customers[BetaCompanyNotVerifiedId].CustomerId, products[TwinkiesId].ProductId, 20);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             // Unactivated product
             result = await customerOrderManager.AddProductToOrder
                 (customers[AlphaCorpId].CustomerId, products[SnakKakesNotActivatedId].ProductId, 20);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             // Discontinued product
             result = await customerOrderManager.AddProductToOrder
                 (customers[EagleIndustriesId].CustomerId, products[LilDebbiesDiscontinuedId].ProductId, 20);
-            await OutputResult(result);
+            await OutputOrderResult(result);
         }
 
         public async Task PlaceGoodOrder()
         {
-            await System.Console.Out.WriteLineAsync("Making some (hopefully) valid purchases...");
+            await Output("Making some (hopefully) valid purchases...");
 
             var customerId = customers[AlphaCorpId].CustomerId;
 
             var result = await customerOrderManager.AddProductToOrder
                 (customerId, products[TwinkiesId].ProductId, 15);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             result = await customerOrderManager.AddProductToOrder
                 (customerId, products[HoHosId].ProductId, 15);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             // Running 1st time will create an order.
             // Running 2nd time will create an order requiring review.
@@ -130,28 +129,28 @@ namespace B2BCorp.Console
             if (result.Successful)
             {
                 await customerOrderManager.PlaceOrder(customerId);
-                await System.Console.Out.WriteLineAsync("Order PLACED!");
+                await Output("Order PLACED!");
             }
         }
 
         public async Task PlaceOrderBeyondCreditLimit()
         {
-            await System.Console.Out.WriteLineAsync("Making purchases beyond credit limit...");
+            await Output("Making purchases beyond credit limit...");
 
             var customerId = customers[CorporateCorporationId].CustomerId;
 
             // Running a 2nd time will exceed credit limit here
             var result = await customerOrderManager.AddProductToOrder
                 (customerId, products[TwinkiesId].ProductId, 35);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             result = await customerOrderManager.AddProductToOrder
                 (customerId, products[HoHosId].ProductId, 35);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             result = await customerOrderManager.AddProductToOrder
                 (customerId, products[TastyCakesId].ProductId, 35);
-            await OutputResult(result);
+            await OutputOrderResult(result);
 
             // Never allowed
             if (result.Successful)
@@ -161,11 +160,30 @@ namespace B2BCorp.Console
             }
         }
 
+        public async Task UpdateProductsConcurrently()
+        {
+            var products = (await productSearchManager.ListAllProducts()).Value;
+            var product = products.Single(x => x.Name == "Twinkies");
+
+            var newPrice = Random.Shared.Next(150, 301) / 100M;
+            await Output($"Updating price to ${newPrice}");
+            product.Price = newPrice;
+            var result = await productEditManager.UpdateProduct(product);
+            await OutputProductUpdateResult(result);
+
+            newPrice = Random.Shared.Next(150, 301) / 100M;
+            await Output($"Updating price to ${newPrice}");
+            product.Price = newPrice;
+            result = await productEditManager.UpdateProduct(product);
+            await OutputProductUpdateResult(result);
+        }
+
         #region Helpers
 
         private async Task CreateCustomers()
         {
-            await System.Console.Out.WriteLineAsync("Creating Customers...");
+            await Output("Creating Customers...");
+
             foreach (var customer in customers)
             {
                 if ((await customerSearchManager.CustomerExists(customer.Name!)).Value) continue;
@@ -182,7 +200,8 @@ namespace B2BCorp.Console
 
         private async Task CreateProducts()
         {
-            await System.Console.Out.WriteLineAsync("Creating Products...");
+            await Output("Creating Products...");
+
             foreach (var product in products)
             {
                 if ((await productSearchManager.ProductExists(product.Name!)).Value) continue;
@@ -199,17 +218,32 @@ namespace B2BCorp.Console
 
         private async Task DiscontinueProduct()
         {
-            await System.Console.Out.WriteLineAsync("Discontinuing a Product...");
+            await Output("Discontinuing a Product...");
+
             await productEditManager.DiscontinueProduct(products[LilDebbiesDiscontinuedId].ProductId);
         }
 
-        private static async Task OutputResult(Result result)
+        private static async Task OutputProductUpdateResult(Result result)
         {
             if (result.Successful)
-                await System.Console.Out.WriteLineAsync("Order was allowed");
-            else
-                await System.Console.Out.WriteLineAsync($"Order was NOT allowed : " +
+                await Output("Product update allowed");
+            else if (result.ConcurrencyError)
+                await Output($"Product update NOT allowed : " +
                     $"'{result.PropertyError[result.PropertyError.Keys.First()]} ({result.PropertyError.Keys.First()})'");
+        }
+
+        private static async Task OutputOrderResult(Result result)
+        {
+            if (result.Successful)
+                await Output("Order was allowed");
+            else
+                await Output($"Order was NOT allowed : " +
+                    $"'{result.PropertyError[result.PropertyError.Keys.First()]} ({result.PropertyError.Keys.First()})'");
+        }
+
+        private static async Task Output(string output)
+        {
+            await System.Console.Out.WriteLineAsync(output);
         }
 
         #endregion
