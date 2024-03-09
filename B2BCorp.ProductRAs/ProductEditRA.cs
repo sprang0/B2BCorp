@@ -3,7 +3,6 @@ using B2BCorp.Contracts.DTOs.Product;
 using B2BCorp.Contracts.ResourceAccessors.Product;
 using B2BCorp.DataModels;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
 
 namespace B2BCorp.ProductRAs
 {
@@ -33,14 +32,13 @@ namespace B2BCorp.ProductRAs
             var record = await dbContext.Products
                 .SingleAsync(x => x.ProductId == productDetail.ProductId);
 
-            Console.WriteLine($"DB: {BitConverter.ToInt64(record.Version)}  Update: {BitConverter.ToInt64(productDetail.Version)}");
-
             record.Name = productDetail.Name;
             record.Price = productDetail.Price;
             record.MinAllowedPerOrder = productDetail.MinAllowedPerOrder;
             record.MaxAllowedPerOrder = productDetail.MaxAllowedPerOrder;
             record.IsActivated = productDetail.IsActivated;
             record.IsDiscontinued = productDetail.IsDiscontinued;
+
             // Assert concurrency check
             dbContext.Entry(record).Property("Version").OriginalValue = productDetail.Version;
 
